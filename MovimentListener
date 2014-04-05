@@ -1,0 +1,212 @@
+/*
+ * ShowLeap v1.0 BETA
+ * Zuzanna Parcheta
+ * Ruben Martinez Candel
+ * Jordi Belda Valls
+ * Maria Nela Pastuizaca
+ * */
+
+
+
+import java.io.IOException;
+
+import javax.swing.JOptionPane;
+
+import com.leapmotion.leap.CircleGesture;
+import com.leapmotion.leap.Controller;
+import com.leapmotion.leap.Frame;
+import com.leapmotion.leap.Gesture;
+import com.leapmotion.leap.Gesture.State;
+import com.leapmotion.leap.GestureList;
+import com.leapmotion.leap.Hand;
+import com.leapmotion.leap.KeyTapGesture;
+import com.leapmotion.leap.ScreenTapGesture;
+import com.leapmotion.leap.SwipeGesture;
+import com.leapmotion.leap.Listener;
+
+
+
+public class MovimentListener extends Listener{
+
+	private static int HolaLeft=0;
+	private static int HolaRight=0;
+	private static int Susana=0;
+	private static String texto="";
+	
+	
+	
+	//al iniciar el controlador muestro por consola que se ha inicializado
+	public void onInit(Controller controller) {
+        System.out.println("Initialized");
+    }
+	
+	/*al conectar el controlador muestro por consola que se ha conectado y doy de alta los gestos que voy a utilizar
+	para detectar signos*/
+    public void onConnect(Controller controller) {
+        System.out.println("Connected");
+        controller.enableGesture(Gesture.Type.TYPE_SWIPE);
+        controller.enableGesture(Gesture.Type.TYPE_CIRCLE);
+        controller.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
+        controller.enableGesture(Gesture.Type.TYPE_KEY_TAP);
+    }
+
+    //al desconectar el controlador informo por consola
+    public void onDisconnect(Controller controller) {
+        System.out.println("Disconnected");
+    }
+
+    //al salir del controlador informo por consola y por mensaje
+    public void onExit(Controller controller) {
+    	JOptionPane.showMessageDialog(null, "Programa finalizado");
+        System.out.println("Exited");
+    }
+
+    //al detectar un frame
+    public void onFrame(Controller controller) {
+    	
+    	//creo el objeto frame 
+    	Frame frame = controller.frame();
+    	
+    	//miro las manos que aparecen en el frame para determinar gestos
+        if (!frame.hands().isEmpty()) {
+        	
+        	//creo un objeto de tipo mano por cada mano que aparezcan ene l frame
+            Hand hand = frame.hands().get(0);
+
+            //creo un objeto de tipo lista de gestos reconocibles que aparecen en el frame
+            GestureList gestures = frame.gestures();
+            
+            //extraigo los gestos que reconozco
+            for (int i = 0; i < gestures.count(); i++) {
+                Gesture gesture = gestures.get(i);
+            
+            //miro que tipo de gesto aparece en el frame
+            switch (gesture.type()) {
+            
+            
+            case TYPE_SCREEN_TAP:
+            	
+            	if(texto!="Susana"){
+            		
+            		System.out.println( "Susana");
+            		texto="Susana";
+            		Sintetizador.Lee(texto);   
+                   // JOptionPane.showMessageDialog(null,texto);
+            		
+            	}
+            
+            
+            break;
+            
+           
+            //si es de tipo swipe hare lo siguiente:
+            case TYPE_SWIPE:
+            	
+            	//creo un objeto de tipo gesto swipe
+                SwipeGesture Swipe = new SwipeGesture(gesture);
+                
+                //compruebo la posicion x en el estado stop, es decir, cuando el gesto se ha terminado de hacer
+                if(Swipe.state()==com.leapmotion.leap.Gesture.State.STATE_STOP & Swipe.position().getX()>100){
+                	
+                	//asigno un 1 confirmando el gesto
+                	HolaRight=1;
+                
+                //compruebo la posicion x en el estado stop, es decir, cuando el gesto se ha terminado de hacer	
+                }else if(Swipe.state()==com.leapmotion.leap.Gesture.State.STATE_STOP & Swipe.position().getX()<-100){
+                	
+                	//asigno un 1 confirmando el gesto
+                	HolaLeft=1;
+                	
+                //compruebo las posiciones de x z en el momento en el que se ha terminado el gesto	
+                }else if(Swipe.state()==com.leapmotion.leap.Gesture.State.STATE_STOP & Swipe.position().getX()<40 & Swipe.position().getX()>-40 & Swipe.position().getZ()<-10 & Swipe.position().getY()>120){
+                	
+                	//si texto no contiene ya este string 
+                	if(texto!="�Que tal?"){
+                		
+                		//lo muestro por consola
+                		System.out.println( "�Que tal?");
+                		//le asigno a texto el string
+                		texto="�Que tal?";
+                		//envio al sintetizador de voz el texto
+                		Sintetizador.Lee(texto);   
+                        //JOptionPane.showMessageDialog(null,texto);
+                		
+                	}
+                	
+                	
+                //compruebo la posicion en z en el momento en el que termino de hacer el gesto para determinar signo	
+                }else if(Swipe.state()==com.leapmotion.leap.Gesture.State.STATE_STOP & Swipe.position().getZ()>0 & Swipe.position().getY()<120){
+                	
+                	//si texto no contiene ya este string 
+                	if(texto!="Mi nombre es:"){
+                		//lo muestro por consola
+                		System.out.println( "Mi nombre es:");
+                		//le asigno a texto el string
+                		texto="Mi nombre es:";
+                		//envio al sintetizador de voz el texto
+                		Sintetizador.Lee(texto);   
+                		
+                	}
+                }
+                
+                break;
+                
+            }  
+        
+            
+            //miro si el gesto se ha terminado para determinar el signo
+            if(HolaLeft==1 & HolaRight==1){
+            	
+            	if(texto!="�Hola!"){
+            		//lo muestro por consola
+            		System.out.println( "�Hola!");
+            		//le asigno a texto el string
+            		texto="�Hola!";
+            		//envio al sintetizador de voz el texto
+            		Sintetizador.Lee(texto);   
+            		
+            	}
+            	//reinicio los controladores
+            	HolaLeft=0;
+            	HolaRight=0;
+       	
+            }
+
+       }  
+
+     }
+
+    }
+}
+
+class Principal {	
+	public static void main(String[] args) {
+	
+		//muestro por mensaje el nombre de la aplicacion
+		JOptionPane.showMessageDialog(null, "ShowLeap");
+		
+		//creo un objeto de tipo movimentListenet que sera el que observara los movimientos en el controlador
+        MovimentListener listener = new MovimentListener();
+        
+        //creo un controlador, que sera la interfaz entre el driver del hardware y este software
+        Controller controller = new Controller();
+
+        // enlazo el listener con el controlador para que le envie informacion
+        controller.addListener(listener);
+
+        // Se mantiene el proceso mientras no se pulsa la tecla intro
+        System.out.println("Pulse la tecla intro para salir...");
+        try {
+            System.in.read();
+        } catch (IOException e) {	
+            e.printStackTrace();
+        }
+
+        
+        // Elimino el enlace entre el controlador y el listener para cerrar el proceso
+        controller.removeListener(listener);
+
+
+	}
+
+}
